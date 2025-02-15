@@ -1,0 +1,51 @@
+modules = ["bash"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Bluetooth Detection"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Installation Bluetooth"
+
+[[workflows.workflow]]
+name = "Bluetooth Detection"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sudo bash install.sh"
+
+[[workflows.workflow]]
+name = "Installation Bluetooth"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash install.sh"
+
+[deployment]
+run = ["sh", "-c", "sudo bash install.sh"]
