@@ -7,8 +7,8 @@ JAUNE='\033[0;33m'
 NEUTRE='\033[0m'
 
 # Configuration des chemins
-INSTALL_DIR="$HOME/.bluetooth_detect"
-LOG_FILE="${INSTALL_DIR}/bluetooth_detect.log"
+INSTALL_DIR="$HOME/.wifi_detect"
+LOG_FILE="${INSTALL_DIR}/wifi_detect.log"
 
 # Création du répertoire de logs s'il n'existe pas
 mkdir -p "${INSTALL_DIR}"
