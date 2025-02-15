@@ -24,9 +24,9 @@ pkg update
    source ~/.bluetooth_detect/bluetooth_detect.sh
    ```
 
-## Installation sur Ubuntu/Debian (Original instructions)
+## Installation sur Ubuntu/Debian
 
-1. Installez les dépendances système (sur Ubuntu/Debian) :
+1. Installez les dépendances système :
    ```bash
    sudo apt-get update
    sudo apt-get install bluez bluez-tools
@@ -52,7 +52,7 @@ pkg update
    detect_bluetooth_network
    ```
 
-## Utilisation en Mode Réel (Original instructions)
+## Utilisation sur Ubuntu/Debian
 
 1. Assurez-vous que votre Bluetooth est activé :
    ```bash
@@ -77,14 +77,14 @@ Si vous n'avez pas accès root ou si vous voulez tester le script sans utiliser 
 TEST_MODE=true detect_bluetooth_network
 ```
 
-## Logs et Dépannage
+## Résolution des problèmes
 
-- Les logs sont stockés dans : `~/.bluetooth_detect/bluetooth_detect.log`
-- Vérifiez que Termux a les permissions Bluetooth dans les paramètres Android
-- Si vous rencontrez des erreurs :
-  - Assurez-vous que le Bluetooth est activé dans les paramètres Android
-  - Vérifiez que Termux a les permissions nécessaires
+- Les journaux sont stockés dans : `~/.bluetooth_detect/bluetooth_detect.log`
+- Pour Termux :
+  - Vérifiez que le Bluetooth est activé dans les paramètres Android
+  - Vérifiez que Termux a les permissions Bluetooth nécessaires
   - Pour les appareils rootés, assurez-vous d'avoir les permissions root correctes
-- Si vous rencontrez des erreurs de permission (Original instructions):
-  ```bash
-  sudo usermod -a -G bluetooth $USER
+- Pour Ubuntu/Debian :
+  - En cas d'erreur de permission :
+    ```bash
+    sudo usermod -a -G bluetooth $USER

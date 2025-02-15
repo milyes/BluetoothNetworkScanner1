@@ -6,7 +6,7 @@ VERT='\033[0;32m'
 NEUTRE='\033[0m'
 
 # Configuration des chemins
-INSTALL_DIR="${HOME}/.bluetooth_detect"
+INSTALL_DIR="$HOME/.bluetooth_detect"
 LOG_FILE="${INSTALL_DIR}/bluetooth_detect.log"
 
 # Création du répertoire de logs s'il n'existe pas
@@ -21,5 +21,5 @@ TEST_MODE=${TEST_MODE:-false}
 
 # Configuration des permissions de logs
 if [ -f "${LOG_FILE}" ]; then
-    chmod 644 "${LOG_FILE}"
+    chmod 600 "${LOG_FILE}"
 fi

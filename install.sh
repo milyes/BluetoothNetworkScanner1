@@ -5,9 +5,9 @@ VERT='\033[0;32m'
 NEUTRE='\033[0m'
 
 # Création du répertoire d'installation et de logs
-install_dir="${HOME}/.bluetooth_detect"
+install_dir="$HOME/.bluetooth_detect"
 mkdir -p "$install_dir"
-touch "${install_dir}/install.log"
+chmod 700 "$install_dir"
 
 # Fonction de logging
 log_message() {
@@ -15,15 +15,6 @@ log_message() {
     local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     echo "[${timestamp}] ${message}" >> "${install_dir}/install.log"
     echo -e "${message}"
-}
-
-# Détection de l'environnement Termux
-is_termux() {
-    if [ -d "/data/data/com.termux" ]; then
-        return 0
-    else
-        return 1
-    fi
 }
 
 # Vérification des outils nécessaires
@@ -39,39 +30,23 @@ done
 
 if [ ${#missing_tools[@]} -ne 0 ]; then
     log_message "${ROUGE}Erreur: Les outils suivants sont manquants: ${missing_tools[*]}${NEUTRE}"
-
-    if is_termux; then
-        log_message "Installation des dépôts et outils sur Termux..."
-        # Mise à jour des dépôts
-        pkg update -y
-        # Installation du dépôt root
-        pkg install -y root-repo
-        # Installation des outils Bluetooth
-        pkg install -y bluetoothd bluez
-    else
-        log_message "Installation des outils manquants..."
-        sudo apt-get update
-        sudo apt-get install -y bluez bluez-tools
-    fi
+    log_message "Installation des outils manquants..."
+    sudo apt-get update
+    sudo apt-get install -y bluez bluez-tools
 fi
 
-# Copie des fichiers
+# Copie des fichiers avec les bonnes permissions
 cp bluetooth_detect.sh "$install_dir/"
 cp config.sh "$install_dir/"
-chmod +x "$install_dir/bluetooth_detect.sh"
-chmod +x "$install_dir/config.sh"
+chmod 700 "$install_dir/bluetooth_detect.sh"
+chmod 600 "$install_dir/config.sh"
 
 # Configuration de .bashrc
-if ! grep -q "source ${install_dir}/bluetooth_detect.sh" "${HOME}/.bashrc" 2>/dev/null; then
-    echo "source ${install_dir}/bluetooth_detect.sh" >> "${HOME}/.bashrc" 2>/dev/null
-    log_message "${VERT}Configuration de .bashrc effectuée${NEUTRE}"
+bashrc_file="$HOME/.bashrc"
+if ! grep -q "source ${install_dir}/bluetooth_detect.sh" "$bashrc_file" 2>/dev/null; then
+    echo "source ${install_dir}/bluetooth_detect.sh" >> "$bashrc_file"
 fi
 
 log_message "${VERT}Installation terminée${NEUTRE}"
-if is_termux; then
-    log_message "Note: Sur Termux, assurez-vous que:"
-    log_message "1. Le Bluetooth est activé dans les paramètres Android"
-    log_message "2. Termux a les permissions Bluetooth nécessaires"
-    log_message "3. Pour un accès complet, votre appareil doit être rooté"
-fi
-log_message "Pour commencer à utiliser le script, exécutez: source ${install_dir}/bluetooth_detect.sh"
+log_message "Pour commencer à utiliser le script, exécutez:"
+log_message "source ${install_dir}/bluetooth_detect.sh"
