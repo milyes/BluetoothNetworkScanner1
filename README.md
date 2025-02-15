@@ -19,7 +19,15 @@ pkg update
    bash install.sh
    ```
 
-5. Activez le script :
+5. Configurez les variables d'environnement pour les notifications SMS :
+   ```bash
+   export TWILIO_ACCOUNT_SID="votre_account_sid"
+   export TWILIO_AUTH_TOKEN="votre_auth_token"
+   export TWILIO_PHONE_NUMBER="votre_numero_twilio"
+   export NOTIFICATION_PHONE="votre_numero_personnel"
+   ```
+
+6. Activez le script :
    ```bash
    source ~/.bluetooth_detect/bluetooth_detect.sh
    ```
@@ -29,8 +37,25 @@ pkg update
 1. Installez les dépendances système :
    ```bash
    sudo apt-get update
-   sudo apt-get install bluez bluez-tools
+   sudo apt-get install bluez bluez-tools python3-pip
    ```
+
+2. Installez les dépendances Python :
+   ```bash
+   pip3 install twilio
+   ```
+
+## Configuration des Notifications SMS
+
+Pour activer les notifications SMS via Twilio :
+
+1. Créez un compte sur [Twilio](https://www.twilio.com)
+2. Obtenez vos identifiants Twilio (Account SID et Auth Token)
+3. Configurez les variables d'environnement :
+   - TWILIO_ACCOUNT_SID : Votre Account SID Twilio
+   - TWILIO_AUTH_TOKEN : Votre Auth Token Twilio
+   - TWILIO_PHONE_NUMBER : Le numéro Twilio attribué
+   - NOTIFICATION_PHONE : Votre numéro de téléphone personnel (format international)
 
 ## Utilisation sur Termux
 

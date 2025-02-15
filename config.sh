@@ -3,6 +3,7 @@
 # Configuration des couleurs
 ROUGE='\033[0;31m'
 VERT='\033[0;32m'
+JAUNE='\033[0;33m'
 NEUTRE='\033[0m'
 
 # Configuration des chemins
@@ -18,6 +19,9 @@ SCAN_TIMEOUT=10
 
 # Mode test (true/false)
 TEST_MODE=${TEST_MODE:-false}
+
+# Numéro de téléphone pour les notifications (format international, ex: +33612345678)
+NOTIFICATION_PHONE=${NOTIFICATION_PHONE:-""}
 
 # Configuration des permissions de logs
 if [ -f "${LOG_FILE}" ]; then

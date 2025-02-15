@@ -11,6 +11,19 @@ log_bluetooth() {
     echo -e "${message}"
 }
 
+# Fonction d'envoi de notification
+send_notification() {
+    local device_info=$1
+    if [ -f "notify.py" ]; then
+        # Vérifier si un numéro de téléphone est configuré
+        if [ -z "${NOTIFICATION_PHONE}" ]; then
+            log_bluetooth "${JAUNE}Aucun numéro de téléphone configuré pour les notifications${NEUTRE}"
+            return
+        fi
+        python3 notify.py "$device_info" "${NOTIFICATION_PHONE}"
+    fi
+}
+
 # Fonction de vérification du service Bluetooth
 check_bluetooth_service() {
     if [ "$TEST_MODE" = "true" ]; then
@@ -130,19 +143,21 @@ detect_bluetooth_network() {
             mac_address=$(echo "$line" | awk '{print $1}')
             device_name=$(echo "$line" | cut -d$'\t' -f2-)
 
-            echo -e "  Adresse MAC : ${mac_address}"
-            echo -e "  Nom : ${device_name}"
+            device_info="Adresse MAC : ${mac_address}\nNom : ${device_name}"
+            echo -e "  ${device_info}"
 
             if [ "$TEST_MODE" = "false" ] && command -v bluetoothctl &> /dev/null; then
-                device_info=$(sudo bluetoothctl info "$mac_address" 2>/dev/null)
-                device_class=$(echo "$device_info" | grep "Class:" | cut -d' ' -f2-)
+                device_info_extended=$(sudo bluetoothctl info "$mac_address" 2>/dev/null)
+                device_class=$(echo "$device_info_extended" | grep "Class:" | cut -d' ' -f2-)
 
                 if [ ! -z "$device_class" ]; then
                     echo -e "  Classe : ${device_class}"
+                    device_info="${device_info}\nClasse : ${device_class}"
                 fi
             fi
 
-            log_bluetooth "Appareil détecté - Adresse MAC : ${mac_address}, Nom : ${device_name}"
+            log_bluetooth "Appareil détecté - ${device_info}"
+            send_notification "${device_info}"
         fi
     done < "$temp_file"
 
