@@ -1,4 +1,4 @@
-modules = ["bash"]
+modules = ["bash", "python-3.11"]
 
 [nix]
 channel = "stable-24_05"
@@ -18,6 +18,14 @@ args = "Bluetooth Detection"
 [[workflows.workflow.tasks]]
 task = "workflow.run"
 args = "Installation Bluetooth"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Bluetooth Detection Real"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Bluetooth Detection Test"
 
 [[workflows.workflow]]
 name = "Bluetooth Detection"
@@ -46,6 +54,34 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "bash install.sh"
+
+[[workflows.workflow]]
+name = "Bluetooth Detection Real"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "sudo bash bluetooth_detect.sh"
+
+[[workflows.workflow]]
+name = "Bluetooth Detection Test"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "TEST_MODE=true bash bluetooth_detect.sh"
 
 [deployment]
 run = ["sh", "-c", "sudo bash install.sh"]

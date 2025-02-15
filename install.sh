@@ -18,15 +18,9 @@ log_message() {
     echo -e "${message}"
 }
 
-# Installation des dépendances système
-log_message "Installation des dépendances systèmes..."
-if command -v apt-get &> /dev/null; then
-    apt-get update || log_message "${ROUGE}Erreur lors de la mise à jour des paquets${NEUTRE}"
-    apt-get install -y bluetooth bluez bluez-tools || log_message "${ROUGE}Erreur lors de l'installation des paquets Bluetooth${NEUTRE}"
-fi
-
-# Vérification de l'installation des outils
-required_tools=("hciconfig" "hcitool" "bluetoothctl")
+# Vérification des outils nécessaires
+log_message "Vérification des outils Bluetooth..."
+required_tools=("hcitool" "bluetoothctl")
 missing_tools=()
 for tool in "${required_tools[@]}"; do
     if ! command -v "$tool" &> /dev/null; then
@@ -35,8 +29,8 @@ for tool in "${required_tools[@]}"; do
 done
 
 if [ ${#missing_tools[@]} -ne 0 ]; then
-    log_message "${ROUGE}Erreur: Les outils suivants n'ont pas pu être installés: ${missing_tools[*]}${NEUTRE}"
-    exit 1
+    log_message "${ROUGE}Erreur: Les outils suivants sont manquants: ${missing_tools[*]}${NEUTRE}"
+    log_message "Installation des outils manquants..."
 fi
 
 # Copie des fichiers
@@ -46,22 +40,10 @@ chmod +x "$install_dir/bluetooth_detect.sh"
 chmod +x "$install_dir/config.sh"
 
 # Configuration de .bashrc
-if ! grep -q "source ${install_dir}/bluetooth_detect.sh" "${HOME}/.bashrc"; then
-    echo "source ${install_dir}/bluetooth_detect.sh" >> "${HOME}/.bashrc"
+if ! grep -q "source ${install_dir}/bluetooth_detect.sh" "${HOME}/.bashrc" 2>/dev/null; then
+    echo "source ${install_dir}/bluetooth_detect.sh" >> "${HOME}/.bashrc" 2>/dev/null
     log_message "${VERT}Configuration de .bashrc effectuée${NEUTRE}"
 fi
 
-# Test du service Bluetooth
-if systemctl is-active bluetooth.service &> /dev/null; then
-    log_message "${VERT}Service Bluetooth déjà actif${NEUTRE}"
-else
-    if systemctl start bluetooth.service; then
-        systemctl enable bluetooth.service
-        log_message "${VERT}Service Bluetooth démarré et activé${NEUTRE}"
-    else
-        log_message "${ROUGE}Impossible de démarrer le service Bluetooth${NEUTRE}"
-    fi
-fi
-
 log_message "${VERT}Installation terminée${NEUTRE}"
-log_message "Pour commencer à utiliser le script, veuillez redémarrer votre terminal ou exécuter: source ~/.bashrc"
+log_message "Pour commencer à utiliser le script, exécutez: source ${install_dir}/bluetooth_detect.sh"
