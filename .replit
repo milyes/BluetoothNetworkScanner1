@@ -31,6 +31,18 @@ args = "Bluetooth Detection Test"
 task = "workflow.run"
 args = "WiFi Detection Test"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "LTE Detection Test"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Installation et Test LTE"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Installation et Test Network"
+
 [[workflows.workflow]]
 name = "Bluetooth Detection"
 author = "agent"
@@ -100,6 +112,48 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "TEST_MODE=true bash wifi_detect.sh"
+
+[[workflows.workflow]]
+name = "LTE Detection Test"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "TEST_MODE=true bash lte_detect.sh"
+
+[[workflows.workflow]]
+name = "Installation et Test LTE"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash install.sh && TEST_MODE=true bash lte_detect.sh"
+
+[[workflows.workflow]]
+name = "Installation et Test Network"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash install.sh && TEST_MODE=true bash wifi_detect.sh && TEST_MODE=true bash lte_detect.sh"
 
 [deployment]
 run = ["sh", "-c", "sudo bash install.sh"]

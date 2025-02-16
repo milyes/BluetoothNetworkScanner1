@@ -27,9 +27,10 @@ pkg update
    export NOTIFICATION_PHONE="votre_numero_personnel"
    ```
 
-6. Activez le script :
+6. Activez les scripts :
    ```bash
-   source ~/.wifi_detect/wifi_detect.sh
+   source ~/.network_detect/wifi_detect.sh
+   source ~/.network_detect/lte_detect.sh
    ```
 
 ## Installation sur Ubuntu/Debian
@@ -37,7 +38,7 @@ pkg update
 1. Installez les dépendances système :
    ```bash
    sudo apt-get update
-   sudo apt-get install wireless-tools python3-pip
+   sudo apt-get install wireless-tools modemmanager python3-pip
    ```
 
 2. Installez les dépendances Python :
@@ -59,19 +60,21 @@ Pour activer les notifications SMS via Twilio :
 
 ## Mode Test
 
-Si vous n'avez pas accès aux outils wireless-tools ou si vous voulez tester le script sans utiliser le WiFi :
+Si vous n'avez pas accès aux outils réseau ou si vous voulez tester les scripts sans utiliser le matériel :
 ```bash
-TEST_MODE=true detect_wifi_network
+TEST_MODE=true detect_wifi_network   # Pour tester la détection WiFi
+TEST_MODE=true detect_lte_network    # Pour tester la détection LTE
 ```
 
 ## Résolution des problèmes
 
-- Les journaux sont stockés dans : `~/.wifi_detect/wifi_detect.log`
+- Les journaux sont stockés dans : `~/.network_detect/network_detect.log`
 - Pour Termux :
-  - Vérifiez que le WiFi est activé dans les paramètres Android
-  - Vérifiez que Termux a les permissions WiFi nécessaires
+  - Vérifiez que le WiFi et les données mobiles sont activés dans les paramètres Android
+  - Vérifiez que Termux a les permissions réseau nécessaires
   - Pour les appareils rootés, assurez-vous d'avoir les permissions root correctes
 - Pour Ubuntu/Debian :
   - En cas d'erreur de permission :
     ```bash
     sudo usermod -a -G netdev $USER
+    sudo usermod -a -G dialout $USER  # Pour l'accès aux modems LTE

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Chargement de la configuration
-source "$HOME/.wifi_detect/config.sh"
+source "$HOME/.network_detect/config.sh"
 
 # Fonction de logging
 log_wifi() {
@@ -104,7 +104,7 @@ detect_wifi_network() {
         simulate_wifi_networks > "$temp_file"
     else
         # Scan des réseaux WiFi
-        if ! timeout ${SCAN_TIMEOUT}s sudo iwlist scan > "$temp_file" 2>&1; then
+        if ! iwlist scan > "$temp_file" 2>&1; then
             log_wifi "${ROUGE}Erreur durant le scan WiFi${NEUTRE}"
             rm "$temp_file"
             return 1
