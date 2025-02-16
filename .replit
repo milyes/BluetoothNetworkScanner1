@@ -55,6 +55,10 @@ args = "Installation et Test e-SIM"
 task = "workflow.run"
 args = "Test e-SIM Scenarios"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Network Visualization"
+
 [[workflows.workflow]]
 name = "Bluetooth Detection"
 author = "agent"
@@ -209,5 +213,24 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "TEST_MODE=true bash esim_detect.sh"
 
+[[workflows.workflow]]
+name = "Network Visualization"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "python app.py"
+waitForPort = 5000
+
 [deployment]
 run = ["sh", "-c", "sudo bash install.sh"]
+
+[[ports]]
+localPort = 5000
+externalPort = 80

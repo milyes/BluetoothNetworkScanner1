@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Detection Visualization</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        .network-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 20px;
+        }
+        .network-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        .network-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .signal-indicator {
+            width: 100%;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            margin: 5px 0;
+        }
+        .signal-bar {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">Network Detection Dashboard</h1>
+    <div class="network-container" id="networkGrid">
+        <!-- Network cards will be dynamically inserted here -->
+    </div>
+
+    <script>
+        const socket = io();
+        
+        function updateVisualization(data) {
+            const networkGrid = d3.select('#networkGrid');
+            
+            // Update or create network cards
+            Object.entries(data).forEach(([network, info]) => {
+                let card = networkGrid.select(`#${network}-card`);
+                
+                if (card.empty()) {
+                    card = networkGrid.append('div')
+                        .attr('id', `${network}-card`)
+                        .attr('class', 'network-card');
+                    
+                    card.append('div')
+                        .attr('class', 'network-title')
+                        .text(network.toUpperCase());
+                    
+                    card.append('div')
+                        .attr('class', 'signal-indicator')
+                        .append('div')
+                        .attr('class', 'signal-bar');
+                    
+                    card.append('pre')
+                        .attr('class', 'network-info');
+                }
+                
+                // Update signal strength if available
+                const signalMatch = info.match(/Signal[^-]*(-\d+)/);
+                if (signalMatch) {
+                    const signalStrength = Math.min(100, Math.max(0, 
+                        (100 + parseInt(signalMatch[1])) * 1.5));
+                    card.select('.signal-bar')
+                        .style('width', `${signalStrength}%`)
+                        .style('background', 
+                            signalStrength > 70 ? '#4CAF50' : 
+                            signalStrength > 40 ? '#FFC107' : '#F44336');
+                }
+                
+                // Update network info
+                card.select('.network-info')
+                    .text(info);
+            });
+        }
+        
+        socket.on('network_update', updateVisualization);
+    </script>
+</body>
+</html>
