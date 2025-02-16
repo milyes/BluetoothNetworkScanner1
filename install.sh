@@ -57,27 +57,42 @@ if [ ${#missing_tools[@]} -ne 0 ]; then
 fi
 
 # Copie des fichiers avec les bonnes permissions
-cp wifi_detect.sh lte_detect.sh notify.py config.sh "$install_dir/"
+cp wifi_detect.sh lte_detect.sh bluetooth_detect.sh esim_detect.sh notify.py config.sh "$install_dir/"
 chmod 700 "$install_dir/wifi_detect.sh"
 chmod 700 "$install_dir/lte_detect.sh"
+chmod 700 "$install_dir/bluetooth_detect.sh"
+chmod 700 "$install_dir/esim_detect.sh"
 chmod 600 "$install_dir/config.sh"
 chmod 600 "$install_dir/notify.py"
 
-# Configuration de .bashrc
-if [ ! -f "$HOME/.bashrc" ]; then
-    touch "$HOME/.bashrc"
-    chmod 600 "$HOME/.bashrc"
-fi
+# Détection de l'environnement Replit
+is_replit_env() {
+    [ -n "$REPL_ID" ] || [ -n "$REPL_OWNER" ]
+    return $?
+}
 
-bashrc_file="$HOME/.bashrc"
-if ! grep -q "source ${install_dir}/wifi_detect.sh" "$bashrc_file" 2>/dev/null; then
-    echo "source ${install_dir}/wifi_detect.sh" >> "$bashrc_file"
-fi
-if ! grep -q "source ${install_dir}/lte_detect.sh" "$bashrc_file" 2>/dev/null; then
-    echo "source ${install_dir}/lte_detect.sh" >> "$bashrc_file"
+# Configuration de .bashrc avec gestion des erreurs
+if ! is_replit_env; then
+    if [ ! -f "$HOME/.bashrc" ]; then
+        touch "$HOME/.bashrc" 2>/dev/null || log_message "${ROUGE}Impossible de créer .bashrc. Les scripts devront être sourcés manuellement.${NEUTRE}"
+        [ -f "$HOME/.bashrc" ] && chmod 600 "$HOME/.bashrc"
+    fi
+
+    if [ -f "$HOME/.bashrc" ] && [ -w "$HOME/.bashrc" ]; then
+        for script in wifi_detect.sh lte_detect.sh bluetooth_detect.sh esim_detect.sh; do
+            if ! grep -q "source ${install_dir}/${script}" "$HOME/.bashrc" 2>/dev/null; then
+                echo "source ${install_dir}/${script}" >> "$HOME/.bashrc" 2>/dev/null || \
+                log_message "${ROUGE}Impossible de modifier .bashrc. Vous devrez sourcer ${script} manuellement.${NEUTRE}"
+            fi
+        done
+    else
+        log_message "${ROUGE}Pas de permission d'écriture sur .bashrc. Les scripts devront être sourcés manuellement.${NEUTRE}"
+    fi
 fi
 
 log_message "${VERT}Installation terminée${NEUTRE}"
 log_message "Pour commencer à utiliser les scripts, exécutez:"
 log_message "source ${install_dir}/wifi_detect.sh"
 log_message "source ${install_dir}/lte_detect.sh"
+log_message "source ${install_dir}/bluetooth_detect.sh"
+log_message "source ${install_dir}/esim_detect.sh"

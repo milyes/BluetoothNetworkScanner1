@@ -1,4 +1,21 @@
-pkg update
+TEST_MODE=true bash wifi_detect.sh     # Pour tester la détection WiFi
+TEST_MODE=true bash lte_detect.sh      # Pour tester la détection LTE
+TEST_MODE=true bash bluetooth_detect.sh # Pour tester la détection Bluetooth
+TEST_MODE=true bash esim_detect.sh     # Pour tester la détection e-SIM
+```
+
+Pour configurer les notifications SMS sur Replit :
+1. Ajoutez vos identifiants Twilio dans les Secrets :
+   - TWILIO_ACCOUNT_SID
+   - TWILIO_AUTH_TOKEN
+   - TWILIO_PHONE_NUMBER
+   - NOTIFICATION_PHONE
+
+## Installation sur Termux (Android)
+
+1. Installez les dépendances :
+   ```bash
+   pkg update
    pkg install root-repo
    pkg install wireless-tools
    ```
@@ -31,6 +48,8 @@ pkg update
    ```bash
    source ~/.network_detect/wifi_detect.sh
    source ~/.network_detect/lte_detect.sh
+   source ~/.network_detect/bluetooth_detect.sh
+   source ~/.network_detect/esim_detect.sh
    ```
 
 ## Installation sur Ubuntu/Debian
@@ -38,12 +57,17 @@ pkg update
 1. Installez les dépendances système :
    ```bash
    sudo apt-get update
-   sudo apt-get install wireless-tools modemmanager python3-pip
+   sudo apt-get install wireless-tools modemmanager python3-pip bluetooth
    ```
 
 2. Installez les dépendances Python :
    ```bash
    pip3 install twilio
+   ```
+
+3. Lancez le script d'installation :
+   ```bash
+   bash install.sh
    ```
 
 ## Configuration des Notifications SMS
@@ -55,15 +79,17 @@ Pour activer les notifications SMS via Twilio :
 3. Configurez les variables d'environnement :
    - TWILIO_ACCOUNT_SID : Votre Account SID Twilio
    - TWILIO_AUTH_TOKEN : Votre Auth Token Twilio
-   - TWILIO_PHONE_NUMBER : Le numéro Twilio attribué
+   - TWILIO_PHONE_NUMBER : Le numéro Twilio attribué (format international, ex: +33612345678)
    - NOTIFICATION_PHONE : Votre numéro de téléphone personnel (format international)
 
 ## Mode Test
 
-Si vous n'avez pas accès aux outils réseau ou si vous voulez tester les scripts sans utiliser le matériel :
+Le mode test permet de simuler la détection des réseaux sans matériel physique :
 ```bash
-TEST_MODE=true detect_wifi_network   # Pour tester la détection WiFi
-TEST_MODE=true detect_lte_network    # Pour tester la détection LTE
+TEST_MODE=true bash wifi_detect.sh     # Pour tester la détection WiFi
+TEST_MODE=true bash lte_detect.sh      # Pour tester la détection LTE
+TEST_MODE=true bash bluetooth_detect.sh # Pour tester la détection Bluetooth
+TEST_MODE=true bash esim_detect.sh     # Pour tester la détection e-SIM
 ```
 
 ## Résolution des problèmes
@@ -78,3 +104,4 @@ TEST_MODE=true detect_lte_network    # Pour tester la détection LTE
     ```bash
     sudo usermod -a -G netdev $USER
     sudo usermod -a -G dialout $USER  # Pour l'accès aux modems LTE
+    sudo usermod -a -G bluetooth $USER # Pour l'accès au Bluetooth

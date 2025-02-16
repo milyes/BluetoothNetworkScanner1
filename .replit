@@ -43,6 +43,18 @@ args = "Installation et Test LTE"
 task = "workflow.run"
 args = "Installation et Test Network"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Tests Complets"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Installation et Test e-SIM"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Test e-SIM Scenarios"
+
 [[workflows.workflow]]
 name = "Bluetooth Detection"
 author = "agent"
@@ -83,7 +95,7 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "sudo bash bluetooth_detect.sh"
+args = "bash bluetooth_detect.sh"
 
 [[workflows.workflow]]
 name = "Bluetooth Detection Test"
@@ -153,7 +165,49 @@ task = "packager.installForAll"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "bash install.sh && TEST_MODE=true bash wifi_detect.sh && TEST_MODE=true bash lte_detect.sh"
+args = "bash install.sh && TEST_MODE=true bash wifi_detect.sh && TEST_MODE=true bash lte_detect.sh && TEST_MODE=true bash bluetooth_detect.sh && TEST_MODE=true bash esim_detect.sh"
+
+[[workflows.workflow]]
+name = "Tests Complets"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "TEST_MODE=true bash bluetooth_detect.sh && TEST_MODE=true bash wifi_detect.sh && TEST_MODE=true bash lte_detect.sh"
+
+[[workflows.workflow]]
+name = "Installation et Test e-SIM"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "bash install.sh && TEST_MODE=true bash esim_detect.sh"
+
+[[workflows.workflow]]
+name = "Test e-SIM Scenarios"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "TEST_MODE=true bash esim_detect.sh"
 
 [deployment]
 run = ["sh", "-c", "sudo bash install.sh"]

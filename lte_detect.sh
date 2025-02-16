@@ -11,6 +11,12 @@ log_lte() {
     echo -e "${message}"
 }
 
+# Détection de l'environnement Replit
+is_replit_env() {
+    [ -n "$REPL_ID" ] || [ -n "$REPL_OWNER" ]
+    return $?
+}
+
 # Fonction d'envoi de notification
 send_notification() {
     local network_info=$1
@@ -21,6 +27,37 @@ send_notification() {
         fi
         python3 notify.py "$network_info" "${NOTIFICATION_PHONE}"
     fi
+}
+
+# Fonction de vérification de l'environnement LTE
+check_lte_environment() {
+    if [ "$TEST_MODE" = "true" ]; then
+        log_lte "${VERT}Mode test activé - Pas de vérification matérielle nécessaire${NEUTRE}"
+        return 0
+    fi
+
+    if is_replit_env; then
+        log_lte "${JAUNE}Détecté environnement Replit - Le matériel LTE n'est pas disponible${NEUTRE}"
+        log_lte "${JAUNE}Suggestion: Utilisez TEST_MODE=true pour tester la fonctionnalité${NEUTRE}"
+        return 1
+    fi
+
+    # Vérification des outils requis
+    local required_tools=("mmcli")
+    local missing_tools=()
+
+    for tool in "${required_tools[@]}"; do
+        if ! command -v "$tool" &> /dev/null; then
+            missing_tools+=("$tool")
+        fi
+    done
+
+    if [ ${#missing_tools[@]} -ne 0 ]; then
+        log_lte "${ROUGE}Erreur : Les outils suivants sont manquants: ${missing_tools[*]}${NEUTRE}"
+        return 1
+    fi
+
+    return 0
 }
 
 # Fonction de simulation pour le mode test
@@ -42,31 +79,6 @@ Cell 3:
     Signal: -78 dBm
     Band: n78 (3500 MHz)
 EOF
-}
-
-# Vérification de l'environnement LTE
-check_lte_environment() {
-    if [ "$TEST_MODE" = "true" ]; then
-        log_lte "${VERT}Mode test activé - Pas de vérification matérielle nécessaire${NEUTRE}"
-        return 0
-    fi
-
-    # Vérification des outils requis
-    local required_tools=("mmcli")
-    local missing_tools=()
-
-    for tool in "${required_tools[@]}"; do
-        if ! command -v "$tool" &> /dev/null; then
-            missing_tools+=("$tool")
-        fi
-    done
-
-    if [ ${#missing_tools[@]} -ne 0 ]; then
-        log_lte "${ROUGE}Erreur : Les outils suivants sont manquants: ${missing_tools[*]}${NEUTRE}"
-        return 1
-    fi
-
-    return 0
 }
 
 # Fonction principale de détection LTE

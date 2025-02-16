@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Chargement de la configuration
-source "$HOME/.bluetooth_detect/config.sh"
+source "$HOME/.network_detect/config.sh"
 
 # Fonction de logging
 log_bluetooth() {
@@ -15,7 +15,6 @@ log_bluetooth() {
 send_notification() {
     local device_info=$1
     if [ -f "notify.py" ]; then
-        # Vérifier si un numéro de téléphone est configuré
         if [ -z "${NOTIFICATION_PHONE}" ]; then
             log_bluetooth "${JAUNE}Aucun numéro de téléphone configuré pour les notifications${NEUTRE}"
             return
@@ -24,75 +23,31 @@ send_notification() {
     fi
 }
 
+# Détection de l'environnement Replit
+is_replit_env() {
+    [ -n "$REPL_ID" ] || [ -n "$REPL_OWNER" ]
+    return $?
+}
+
 # Fonction de vérification du service Bluetooth
 check_bluetooth_service() {
     if [ "$TEST_MODE" = "true" ]; then
         return 0
     fi
 
-    # Essayer différentes méthodes pour vérifier/démarrer le service Bluetooth
-    if command -v service >/dev/null 2>&1; then
-        if ! service bluetooth status >/dev/null 2>&1; then
-            log_bluetooth "${ROUGE}Le service Bluetooth n'est pas actif. Démarrage...${NEUTRE}"
-            sudo service bluetooth start
-            sleep 2
-        else
-            log_bluetooth "${VERT}Le service Bluetooth est actif${NEUTRE}"
-        fi
-    elif [ -f "/etc/init.d/bluetooth" ]; then
-        if ! /etc/init.d/bluetooth status >/dev/null 2>&1; then
-            log_bluetooth "${ROUGE}Le service Bluetooth n'est pas actif. Démarrage...${NEUTRE}"
-            sudo /etc/init.d/bluetooth start
-            sleep 2
-        else
-            log_bluetooth "${VERT}Le service Bluetooth est actif${NEUTRE}"
-        fi
-    else
-        log_bluetooth "${JAUNE}Impossible de vérifier le statut du service Bluetooth. Continuation...${NEUTRE}"
-    fi
-}
-
-# Fonction de simulation pour le mode test
-simulate_bluetooth_devices() {
-    cat << EOF
-Scan en cours...
-00:11:22:33:44:55	Smartphone Test
-AA:BB:CC:DD:EE:FF	Écouteurs Test
-12:34:56:78:90:AB	Enceinte Test
-EOF
-}
-
-# Vérification de l'environnement Bluetooth
-check_bluetooth_environment() {
-    if [ "$TEST_MODE" = "true" ]; then
-        log_bluetooth "${VERT}Mode test activé - Pas de vérification matérielle nécessaire${NEUTRE}"
-        return 0
-    fi
-
-    # Vérification des outils requis
-    local required_tools=("hcitool" "bluetoothctl")
-    local missing_tools=()
-
-    for tool in "${required_tools[@]}"; do
-        if ! command -v "$tool" &> /dev/null; then
-            missing_tools+=("$tool")
-        fi
-    done
-
-    if [ ${#missing_tools[@]} -ne 0 ]; then
-        log_bluetooth "${ROUGE}Erreur : Les outils suivants sont manquants: ${missing_tools[*]}${NEUTRE}"
+    if is_replit_env; then
+        log_bluetooth "${JAUNE}Détecté environnement Replit - Le matériel Bluetooth n'est pas disponible${NEUTRE}"
+        log_bluetooth "${JAUNE}Suggestion: Utilisez TEST_MODE=true pour tester la fonctionnalité${NEUTRE}"
         return 1
     fi
 
-    # Vérification du service Bluetooth
-    check_bluetooth_service
-
-    # Vérification de l'interface Bluetooth
-    if ! hciconfig 2>/dev/null | grep -q "hci"; then
-        log_bluetooth "${ROUGE}Erreur : Aucune interface Bluetooth n'a été détectée${NEUTRE}"
+    # Vérification basique du Bluetooth
+    if ! ls /sys/class/bluetooth/* >/dev/null 2>&1; then
+        log_bluetooth "${ROUGE}Aucun périphérique Bluetooth détecté${NEUTRE}"
         return 1
     fi
 
+    log_bluetooth "${VERT}Périphérique Bluetooth détecté${NEUTRE}"
     return 0
 }
 
@@ -100,68 +55,38 @@ check_bluetooth_environment() {
 detect_bluetooth_network() {
     log_bluetooth "${VERT}Vérification de l'environnement Bluetooth...${NEUTRE}"
 
-    if ! check_bluetooth_environment; then
-        log_bluetooth "${ROUGE}L'environnement n'est pas correctement configuré pour le Bluetooth${NEUTRE}"
+    if ! check_bluetooth_service; then
+        if ! is_replit_env; then
+            log_bluetooth "${ROUGE}L'environnement n'est pas correctement configuré pour le Bluetooth${NEUTRE}"
+        fi
         return 1
     fi
-
-    log_bluetooth "${VERT}Démarrage du scan Bluetooth...${NEUTRE}"
-
-    # Création d'un fichier temporaire pour les résultats
-    temp_file=$(mktemp)
 
     if [ "$TEST_MODE" = "true" ]; then
-        # En mode test, utiliser des données simulées
-        simulate_bluetooth_devices > "$temp_file"
+        # Mode test - simulation de données
+        log_bluetooth "${VERT}Mode test activé - Utilisation de données simulées${NEUTRE}"
+        while read -r line; do
+            echo -e "  ${line}"
+            log_bluetooth "Appareil détecté - ${line}"
+            send_notification "${line}"
+        done <<EOF
+Device 00:11:22:33:44:55 Smartphone Test
+Device AA:BB:CC:DD:EE:FF Écouteurs Test
+Device 12:34:56:78:90:AB Enceinte Test
+EOF
     else
-        # Activation de l'interface Bluetooth
-        if ! sudo hciconfig hci0 up 2>/dev/null; then
-            log_bluetooth "${ROUGE}Impossible d'activer l'interface Bluetooth${NEUTRE}"
-            rm "$temp_file"
-            return 1
-        fi
-
-        # Scan des appareils avec timeout et capture des erreurs
-        if ! timeout ${SCAN_TIMEOUT}s sudo hcitool scan > "$temp_file" 2>&1; then
-            log_bluetooth "${ROUGE}Erreur durant le scan Bluetooth${NEUTRE}"
-            rm "$temp_file"
-            return 1
-        fi
-    fi
-
-    # Vérification et affichage des résultats
-    if [ ! -s "$temp_file" ]; then
-        log_bluetooth "${ROUGE}Aucun appareil Bluetooth n'a été détecté${NEUTRE}"
-        rm "$temp_file"
-        return 1
-    fi
-
-    # Traitement et affichage des résultats
-    log_bluetooth "${VERT}Appareils détectés :${NEUTRE}"
-    while read -r line; do
-        if [[ $line != "Scanning ..."* ]] && [[ $line != "Scan en cours..."* ]]; then
-            mac_address=$(echo "$line" | awk '{print $1}')
-            device_name=$(echo "$line" | cut -d$'\t' -f2-)
-
-            device_info="Adresse MAC : ${mac_address}\nNom : ${device_name}"
-            echo -e "  ${device_info}"
-
-            if [ "$TEST_MODE" = "false" ] && command -v bluetoothctl &> /dev/null; then
-                device_info_extended=$(sudo bluetoothctl info "$mac_address" 2>/dev/null)
-                device_class=$(echo "$device_info_extended" | grep "Class:" | cut -d' ' -f2-)
-
-                if [ ! -z "$device_class" ]; then
-                    echo -e "  Classe : ${device_class}"
-                    device_info="${device_info}\nClasse : ${device_class}"
-                fi
+        # Mode réel - lecture des périphériques Bluetooth
+        log_bluetooth "${VERT}Scan des périphériques Bluetooth...${NEUTRE}"
+        for dev in /sys/class/bluetooth/*; do
+            if [ -d "$dev" ]; then
+                device_info="Périphérique: $(basename $dev)"
+                echo -e "  ${device_info}"
+                log_bluetooth "Périphérique détecté - ${device_info}"
+                send_notification "${device_info}"
             fi
+        done
+    fi
 
-            log_bluetooth "Appareil détecté - ${device_info}"
-            send_notification "${device_info}"
-        fi
-    done < "$temp_file"
-
-    rm "$temp_file"
     return 0
 }
 

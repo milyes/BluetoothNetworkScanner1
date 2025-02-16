@@ -11,11 +11,16 @@ log_wifi() {
     echo -e "${message}"
 }
 
+# Détection de l'environnement Replit
+is_replit_env() {
+    [ -n "$REPL_ID" ] || [ -n "$REPL_OWNER" ]
+    return $?
+}
+
 # Fonction d'envoi de notification
 send_notification() {
     local network_info=$1
     if [ -f "notify.py" ]; then
-        # Vérifier si un numéro de téléphone est configuré
         if [ -z "${NOTIFICATION_PHONE}" ]; then
             log_wifi "${JAUNE}Aucun numéro de téléphone configuré pour les notifications${NEUTRE}"
             return
@@ -28,6 +33,12 @@ send_notification() {
 check_wifi_service() {
     if [ "$TEST_MODE" = "true" ]; then
         return 0
+    fi
+
+    if is_replit_env; then
+        log_wifi "${JAUNE}Détecté environnement Replit - Le matériel WiFi n'est pas disponible${NEUTRE}"
+        log_wifi "${JAUNE}Suggestion: Utilisez TEST_MODE=true pour tester la fonctionnalité${NEUTRE}"
+        return 1
     fi
 
     # Vérification de l'interface WiFi
@@ -85,12 +96,15 @@ check_wifi_environment() {
     return 0
 }
 
+
 # Fonction principale de détection WiFi
 detect_wifi_network() {
     log_wifi "${VERT}Vérification de l'environnement WiFi...${NEUTRE}"
 
-    if ! check_wifi_environment; then
-        log_wifi "${ROUGE}L'environnement n'est pas correctement configuré pour le WiFi${NEUTRE}"
+    if ! check_wifi_service; then
+        if ! is_replit_env; then
+            log_wifi "${ROUGE}L'environnement n'est pas correctement configuré pour le WiFi${NEUTRE}"
+        fi
         return 1
     fi
 
