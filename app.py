@@ -5,9 +5,13 @@ import subprocess
 import threading
 import time
 import os
+from ai_predictor import NetworkAIPredictor
 
 app = Flask(__name__)
 socketio = SocketIO(app)
+
+# Initialize AI predictor
+ai_predictor = NetworkAIPredictor()
 
 def run_network_detection():
     """Run network detection scripts and emit results through websocket"""
@@ -38,6 +42,10 @@ def run_network_detection():
             except Exception as e:
                 print(f"Error running {script}: {str(e)}")
                 network_data[script.replace('_detect.sh', '')] = f"Error: {str(e)}"
+
+        # Get AI predictions
+        ai_predictions = ai_predictor.predict_network_quality(network_data)
+        network_data['ai_analysis'] = ai_predictions
 
         # Emit the collected data
         socketio.emit('network_update', network_data)

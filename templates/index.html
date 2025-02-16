@@ -38,6 +38,17 @@
             border-radius: 4px;
             transition: width 0.3s ease;
         }
+        .ai-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e3f2fd;
+            border-radius: 8px;
+        }
+        .quality-score {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #1976d2;
+        }
     </style>
 </head>
 <body>
@@ -45,35 +56,53 @@
     <div class="network-container" id="networkGrid">
         <!-- Network cards will be dynamically inserted here -->
     </div>
+    <div class="ai-analysis" id="aiAnalysis">
+        <h2>Analyse IA du Réseau</h2>
+        <div id="aiPredictions"></div>
+    </div>
 
     <script>
         const socket = io();
-        
+
         function updateVisualization(data) {
             const networkGrid = d3.select('#networkGrid');
-            
+
             // Update or create network cards
             Object.entries(data).forEach(([network, info]) => {
+                if (network === 'ai_analysis') {
+                    // Update AI analysis section
+                    const aiDiv = d3.select('#aiPredictions');
+                    if (info.error) {
+                        aiDiv.html(`<p class="error">${info.error}</p>`);
+                    } else {
+                        aiDiv.html(`
+                            <p class="quality-score">Score de Qualité: ${(info.quality_score * 100).toFixed(1)}%</p>
+                            ${info.reliability ? `<p>Fiabilité: ${(info.reliability * 100).toFixed(1)}%</p>` : ''}
+                        `);
+                    }
+                    return;
+                }
+
                 let card = networkGrid.select(`#${network}-card`);
-                
+
                 if (card.empty()) {
                     card = networkGrid.append('div')
                         .attr('id', `${network}-card`)
                         .attr('class', 'network-card');
-                    
+
                     card.append('div')
                         .attr('class', 'network-title')
                         .text(network.toUpperCase());
-                    
+
                     card.append('div')
                         .attr('class', 'signal-indicator')
                         .append('div')
                         .attr('class', 'signal-bar');
-                    
+
                     card.append('pre')
                         .attr('class', 'network-info');
                 }
-                
+
                 // Update signal strength if available
                 const signalMatch = info.match(/Signal[^-]*(-\d+)/);
                 if (signalMatch) {
@@ -85,13 +114,13 @@
                             signalStrength > 70 ? '#4CAF50' : 
                             signalStrength > 40 ? '#FFC107' : '#F44336');
                 }
-                
+
                 // Update network info
                 card.select('.network-info')
                     .text(info);
             });
         }
-        
+
         socket.on('network_update', updateVisualization);
     </script>
 </body>
