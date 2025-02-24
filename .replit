@@ -228,6 +228,19 @@ task = "shell.exec"
 args = "python app.py"
 waitForPort = 5000
 
+[[workflows.workflow]]
+name = "mx07"
+mode = "sequential"
+author = 39699562
+
+[[workflows.workflow.tasks]]
+task = "packager.installForLanguage"
+args = "nix"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Network Visualization"
+
 [deployment]
 run = ["sh", "-c", "sudo bash install.sh"]
 
