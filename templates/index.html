@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Detection Visualization</title>
+    <title>Visualisation de Détection Réseau</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <style>
@@ -52,9 +53,9 @@
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Network Detection Dashboard</h1>
+    <h1 style="text-align: center;">Tableau de Bord de Détection Réseau</h1>
     <div class="network-container" id="networkGrid">
-        <!-- Network cards will be dynamically inserted here -->
+        <!-- Les cartes réseau seront insérées ici dynamiquement -->
     </div>
     <div class="ai-analysis" id="aiAnalysis">
         <h2>Analyse IA du Réseau</h2>
@@ -67,10 +68,8 @@
         function updateVisualization(data) {
             const networkGrid = d3.select('#networkGrid');
 
-            // Update or create network cards
             Object.entries(data).forEach(([network, info]) => {
                 if (network === 'ai_analysis') {
-                    // Update AI analysis section
                     const aiDiv = d3.select('#aiPredictions');
                     if (info.error) {
                         aiDiv.html(`<p class="error">${info.error}</p>`);
@@ -83,6 +82,14 @@
                     return;
                 }
 
+                let networkTitle = network;
+                switch(network) {
+                    case 'wifi': networkTitle = 'WiFi'; break;
+                    case 'lte': networkTitle = 'Réseau Mobile'; break;
+                    case 'bluetooth': networkTitle = 'Bluetooth'; break;
+                    case 'esim': networkTitle = 'e-SIM'; break;
+                }
+
                 let card = networkGrid.select(`#${network}-card`);
 
                 if (card.empty()) {
@@ -92,7 +99,7 @@
 
                     card.append('div')
                         .attr('class', 'network-title')
-                        .text(network.toUpperCase());
+                        .text(networkTitle);
 
                     card.append('div')
                         .attr('class', 'signal-indicator')
@@ -103,7 +110,6 @@
                         .attr('class', 'network-info');
                 }
 
-                // Update signal strength if available
                 const signalMatch = info.match(/Signal[^-]*(-\d+)/);
                 if (signalMatch) {
                     const signalStrength = Math.min(100, Math.max(0, 
@@ -115,7 +121,6 @@
                             signalStrength > 40 ? '#FFC107' : '#F44336');
                 }
 
-                // Update network info
                 card.select('.network-info')
                     .text(info);
             });
